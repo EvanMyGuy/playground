@@ -59,54 +59,64 @@
     isDucking: false
   };
 
-  class Obstacle {
-    constructor(type) {
-      this.x = canvas.width;
-      this.type = type;
-      this.width = 20;
+class Obstacle {
+  constructor(type) {
+    this.x = canvas.width;
+    this.type = type;
+    this.width = 20;
+    if (this.type === 'jump') {
       this.height = canvas.height / 2;
-      this.passed = false;
+      this.y = canvas.height - this.height; // Position at the bottom for 'jump' obstacles
+    } else {
+      this.height = canvas.height / 2;
+      this.y = 0; // Position at the top for 'duck' obstacles
     }
-
-    draw() {
-      ctx.fillStyle = this.type === 'jump' ? 'green' : 'red';
-      const drawY = this.type === 'jump' ? this.height : 0;
-      ctx.fillRect(this.x, drawY, this.width, this.height);
-    }
-
-    update() {
-      this.x -= speed;
-      this.draw();
-    }
+    this.passed = false;
   }
+
+  draw() {
+    ctx.fillStyle = this.type === 'jump' ? 'green' : 'red';
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+  }
+
+  update() {
+    this.x -= speed;
+    this.draw();
+  }
+}
+
+
 
   let obstacles = [new Obstacle(Math.random() > 0.5 ? 'jump' : 'duck')];
 
-  function handleObstacles() {
-    if (obstacles[obstacles.length - 1].x < canvas.width - 200) {
-      obstacles.push(new Obstacle(Math.random() > 0.5 ? 'jump' : 'duck'));
+function handleObstacles() {
+  if (obstacles[obstacles.length - 1].x < canvas.width - 200) {
+    obstacles.push(new Obstacle(Math.random() > 0.5 ? 'jump' : 'duck'));
+  }
+
+  obstacles.forEach(obstacle => {
+    obstacle.update();
+
+    // Check collision
+    if (obstacle.x < player.x + player.width &&
+        obstacle.x + obstacle.width > player.x) {
+      if ((obstacle.type === 'jump' && !player.isJumping) ||
+          (obstacle.type === 'duck' && !player.isDucking)) {
+        endGame();
+      }
     }
 
-    obstacles.forEach(obstacle => {
-      obstacle.update();
+    // Increment score when the obstacle is completely passed
+    if (obstacle.x + obstacle.width < player.x && !obstacle.passed) {
+      score++;
+      scoreElement.textContent = `Score: ${score}`;
+      obstacle.passed = true;
+    }
+  });
 
-      // Check collision
-      if (obstacle.x < player.x + player.width &&
-          obstacle.x + obstacle.width > player.x &&
-          !obstacle.passed) {
-        if ((obstacle.type === 'jump' && !player.isJumping) ||
-            (obstacle.type === 'duck' && !player.isDucking)) {
-          endGame();
-        } else {
-          score++;
-          scoreElement.textContent = `Score: ${score}`;
-          obstacle.passed = true;
-        }
-      }
-    });
+  obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
+}
 
-    obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
-  }
 
   function drawPlayer() {
     ctx.fillStyle = 'blue';
@@ -130,14 +140,21 @@
   }
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'a' && !player.isDucking) player.isJumping = true;
-    if (e.key === 's' && !player.isJumping) player.isDucking = true;
-  });
+  if (e.key === 'a') {
+    player.isDucking = false; // Immediately cancel ducking if jumping
+    player.isJumping = true;
+  }
+  if (e.key === 's') {
+    player.isJumping = false; // Immediately cancel jumping if ducking
+    player.isDucking = true;
+  }
+});
 
-  document.addEventListener('keyup', (e) => {
-    if (e.key === 'a') player.isJumping = false;
-    if (e.key === 's') player.isDucking = false;
-  });
+document.addEventListener('keyup', (e) => {
+  if (e.key === 'a') player.isJumping = false;
+  if (e.key === 's') player.isDucking = false;
+});
+
 
   function endGame() {
     gameRunning = false;
