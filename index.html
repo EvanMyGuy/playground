@@ -126,12 +126,13 @@ function drawPlayer() {
 
     if (player.isJumping) {
         playerYPos -= player.jumpHeight;
-    } else if (player.isDucking) {
-        // Visually compress the cube for ducking
-        playerHeight *= 0.6; // Make the cube shorter
-        playerWidth *= 1.0;  // Make the cube wider
-        playerYPos += (player.height - playerHeight) / 2; // Adjust Y position to keep cube grounded
-    }
+    }  else if (player.isDucking) {
+    playerHeight *= 0.6;  // Make the cube shorter
+    playerWidth *= 1.1;   // Make the cube wider
+    // Remove the division by 2 from the next line
+    playerYPos += player.height - playerHeight;  // Adjust Y position to compress from top
+}
+
 
     ctx.fillRect(player.x, playerYPos, playerWidth, playerHeight);
 }
