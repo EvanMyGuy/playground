@@ -128,21 +128,23 @@ duckImage.src = 'images/duck_cube.png';
   
 function drawPlayer() {
   let playerImage = baseImage;
+  let playerYPos = player.y;
+  let playerHeight = player.height;
+  let playerWidth = player.width;
+
   if (player.isJumping) {
     playerImage = jumpImage;
+    playerYPos -= player.jumpHeight;
   } else if (player.isDucking) {
     playerImage = duckImage;
+    // The cube should compress from the top, so we adjust the height and Y position
+    playerHeight *= 0.6;  // Make the cube shorter
+    playerWidth *= 1.1;   // Make the cube wider
+    playerYPos += player.height - playerHeight; // Adjust Y position to compress from top
   }
 
-  // Adjust the Y position based on jumping or ducking
-  let playerYPos = player.y - (player.isJumping ? player.jumpHeight : 0);
-
-  if (player.isDucking) {
-    // Adjustments for ducking image if necessary
-  }
-
-  // Draw the image onto the canvas
-  ctx.drawImage(playerImage, player.x, playerYPos, player.width, player.height);
+  // Draw the image onto the canvas with potential width and height adjustments
+  ctx.drawImage(playerImage, player.x, playerYPos, playerWidth, playerHeight);
 }
 
 function gameLoop() {
