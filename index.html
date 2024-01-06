@@ -118,26 +118,33 @@ function handleObstacles() {
 }
 
 
-  function drawPlayer() {
+function drawPlayer() {
     ctx.fillStyle = 'blue';
     let playerYPos = player.y;
+    let playerHeight = player.height;
+    let playerWidth = player.width;
+
     if (player.isJumping) {
-      playerYPos -= player.jumpHeight;
+        playerYPos -= player.jumpHeight;
     } else if (player.isDucking) {
-      playerYPos += player.duckHeight;
+        // Visually compress the cube for ducking
+        playerHeight *= 0.6; // Make the cube shorter
+        playerWidth *= 1.0;  // Make the cube wider
+        playerYPos += (player.height - playerHeight) / 2; // Adjust Y position to keep cube grounded
     }
-    ctx.fillRect(player.x, playerYPos, player.width, player.height);
-  }
 
-  function gameLoop() {
-    if (!gameRunning) return;
+    ctx.fillRect(player.x, playerYPos, playerWidth, playerHeight);
+}
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    handleObstacles();
-    drawPlayer();
-    speed += 0.005; // Gradually increase speed
-    requestAnimationFrame(gameLoop);
-  }
+function gameLoop() {
+  if (!gameRunning) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  handleObstacles();
+  drawPlayer();
+  speed += 0.003 + score * 0.00005; // Slower initial increase, scaling with score
+  requestAnimationFrame(gameLoop);
+}
 
   document.addEventListener('keydown', (e) => {
   if (e.key === 'a') {
